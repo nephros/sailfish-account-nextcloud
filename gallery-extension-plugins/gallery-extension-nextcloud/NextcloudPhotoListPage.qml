@@ -44,7 +44,7 @@ Page {
             }
         }
 
-        delegate: BackgroundItem {
+        delegate: ListItem {
             id: photoDelegate
 
             width: parent.width
@@ -58,6 +58,13 @@ Page {
                 pageStack.push(Qt.resolvedUrl("NextcloudFullscreenPhotoPage.qml"), props)
             }
 
+            menu: ContextMenu {
+                MenuItem {
+                    //: Menu entry for Nextcloud photos
+                    //% "Set as Album thumbnail"
+                    text: qsTrId("jolla_gallery_nextcloud-cm-set_as_thumb")
+                }
+            }
             FileItem {
                 id: fileItem
 
