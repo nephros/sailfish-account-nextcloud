@@ -10,6 +10,10 @@
 #include "replyparser_p.h"
 #include "syncer_p.h"
 
+#include <QtCore/QUrl>
+#include <QtCore/QUrlQuery>
+
+
 namespace {
 
 QString parentAlbumId(const QString &albumId)
@@ -103,6 +107,18 @@ ReplyParser::GalleryMetadata ReplyParser::galleryMetadataFromResources(Syncer *i
             photo.fileSize = resource.size;
             photo.fileType = resource.contentType;
             photo.etag = resource.etag;
+
+            QUrl tnUrl(imageSyncer->serverUrl());
+            tnUrl.setPath(imageSyncer->webDavPath().append(QStringLiteral("/core/preview")));
+            QUrlQuery tnQuery;
+            tnQuery.addQueryItem(QStringLiteral("fileId"), resource.fileId);
+            tnQuery.addQueryItem(QStringLiteral("forceIcon"), QString::number(0));
+            tnQuery.addQueryItem(QStringLiteral("a"), QString::number(0));
+            tnQuery.addQueryItem(QStringLiteral("x"), QString::number(320));
+            tnQuery.addQueryItem(QStringLiteral("y"), QString::number(320));
+            tnUrl.setQuery(tnQuery);
+
+            photo.thumbnailUrl = tnUrl;
 
             metadata.photos.append(photo);
             queriedAlbumPhotoCount++;
