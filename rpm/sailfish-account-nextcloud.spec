@@ -77,6 +77,7 @@ Provides synchronisation of gallery images with Nextcloud.
 Summary:   Provides integration of Nextcloud images into Gallery application
 Requires: sailfish-components-gallery-qt5 >= 1.1.9
 Requires: sailfish-components-filemanager >= 0.2.17
+Requires: nemo-qml-plugin-models-qt5
 
 %description -n jolla-gallery-extension-nextcloud
 Provides integration of Nextcloud images into Gallery application.
