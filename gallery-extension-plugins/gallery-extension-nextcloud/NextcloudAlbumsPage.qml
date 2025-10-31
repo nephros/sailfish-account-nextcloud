@@ -16,7 +16,6 @@ import org.nemomobile.models 1.0
 MediaSourcePage {
     id: root
 
-    property alias searchModel: searchModel
     SearchModel {
         id: searchModel
         sourceModel: root.model
@@ -27,41 +26,11 @@ MediaSourcePage {
 
     SilicaListView {
         id: view
-
         anchors.fill: parent
-
-        header: FocusScope {
-            id: pageHeader
-            property var model: root.searchModel
-            readonly property bool active: searchField.text.length > 0
-
-            property string title: root.model.userDisplayName || root.model.userId
-
+        header: MediaSearchHeader {
             width: view.width
-            visible: active || model.count > 0
-            implicitHeight: col.height
-
-            Column {
-                id: col
-                width: parent.width
-                PageHeader {
-                    id: header
-                    //: Nextcloud Albums header text
-                    //% "Albums"
-                    title: qsTrId("jolla_gallery_nextcloud-la-user_albums")
-                    description: pageHeader.title
-                }
-                SearchField {
-                    id: searchField
-                    width: parent.width
-                    //: Nextcloud Albums search field placeholder text
-                    //% "Search albums"
-                    placeholderText: qsTrId("jolla_gallery_nextcloud-ph-search_albums")
-                    EnterKey.onClicked: model.pattern = text.trim()
-                    EnterKey.iconSource: "image://theme/icon-m-search"
-                    onTextChanged: if (text.length == 0) model.pattern = ""
-                }
-            }
+            title: root.model.userDisplayName || root.model.userId
+            model: root.searchModel
         }
         cacheBuffer: Screen.height
         model: root.searchModel
