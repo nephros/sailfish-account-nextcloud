@@ -287,21 +287,18 @@ void ImageCacheThreadWorker::populatePhotoThumbnail(int idempToken, int accountI
         m_downloader = new ImageDownloader(this);
     }
 
-    QUrl previewUrl(requestTemplate.url()); // vet scheme and host??
-    previewUrl.setPath(QStringLiteral("/index.php/core/preview")); // FIXME: root path may not be server/core but /server/somelocation/core!
-    qDebug() << "Server Core path: and core:" << previewUrl.toString();
+    requestTemplate.url().setPath(QStringLiteral("/index.php/core/preview")); // FIXME: root path may not be server/core but /server/somelocation/core!
     QUrlQuery previewQuery;
     previewQuery.addQueryItem(QStringLiteral("fileId"), photoId);
     previewQuery.addQueryItem(QStringLiteral("forceIcon"), QString::number(0));
     previewQuery.addQueryItem(QStringLiteral("a"), QString::number(0));
     previewQuery.addQueryItem(QStringLiteral("x"), QString::number(320));
     previewQuery.addQueryItem(QStringLiteral("y"), QString::number(320));
-    previewUrl.setQuery(previewQuery);
-    qDebug() << "Setting TN URL for" << photoId << "in" << albumId << "to:" << previewUrl.toString();
+    requestTemplate.url().setQuery(previewQuery);
 
     ImageDownloadWatcher *watcher = m_downloader->downloadImage(
                 idempToken,
-                previewUrl,
+                QUrl(""),
                 photo.fileName,
                 SyncCache::albumImageDownloadDir(accountId, photo.albumPath, true),
                 requestTemplate);
