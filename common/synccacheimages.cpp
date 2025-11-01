@@ -287,9 +287,7 @@ void ImageCacheThreadWorker::populatePhotoThumbnail(int idempToken, int accountI
         m_downloader = new ImageDownloader(this);
     }
 
-    QUrl previewUrl;
-    previewUrl.setScheme(requestTemplate.scheme());
-    previewUrl.setHost(requestTemplate.host());
+    QUrl previewUrl(requestTemplate.url()); // vet scheme and host??
     previewUrl.setPath(QStringLiteral("/index.php/core/preview")); // FIXME: root path may not be server/core but /server/somelocation/core!
     qDebug() << "Server Core path: and core:" << previewUrl.toString();
     QUrlQuery previewQuery;
