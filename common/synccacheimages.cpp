@@ -303,7 +303,6 @@ void ImageCacheThreadWorker::populatePhotoThumbnail(int idempToken, int accountI
                 idempToken,
                 previewUrl,
                 photo.fileName,
-                //SyncCache::imageDownloadDir(accountId),
                 SyncCache::albumImageDownloadDir(accountId, photo.albumPath, true),
                 requestTemplate);
 
@@ -345,7 +344,6 @@ void ImageCacheThreadWorker::populatePhotoThumbnail(int idempToken, int accountI
         }
         watcher->deleteLater();
     });
-
 
     // Thumbnail downloading is not supported at the moment. This is not an error,
     // so just return an empty string.
