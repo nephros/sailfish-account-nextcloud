@@ -110,8 +110,8 @@ ReplyParser::GalleryMetadata ReplyParser::galleryMetadataFromResources(Syncer *i
             photo.etag = resource.etag;
 
             QUrl tnUrl(imageSyncer->serverUrl());
-            tnUrl.setPath(imageSyncer->webDavPath().append(QStringLiteral("/core/preview")));
-            qCDebug(lcNextcloud) << "Server WebDAV path: and core:" << tnUrl.toString();
+            tnUrl.setPath(QStringLiteral("/index.php/core/preview")); // FIXME: root path may not be server/core but /server/somelocation/core!
+            qCDebug(lcNextcloud) << "Server Core path: and core:" << tnUrl.toString();
             QUrlQuery tnQuery;
             tnQuery.addQueryItem(QStringLiteral("fileId"), resource.fileId);
             tnQuery.addQueryItem(QStringLiteral("forceIcon"), QString::number(0));
