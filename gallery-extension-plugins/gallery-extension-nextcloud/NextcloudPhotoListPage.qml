@@ -96,6 +96,11 @@ Page {
                 albumId: model.albumId
                 photoId: model.photoId
             }
+            BusyIndicator {
+                anchors.centerIn: fileItem
+                size: BusyIndicatorSize.Small
+                running: thumbDownloader.status !== NextcloudImageDownloader.Downloading
+            }
         }
     }
 }
