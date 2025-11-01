@@ -84,6 +84,11 @@ Page {
                     opacity: thumbDownloader.status === NextcloudImageDownloader.Ready && photoDelegate.highlighted
                              ? Theme.opacityHigh : 1
                 }
+                BusyIndicator {
+                    anchors.centerIn: parent.icon
+                    size: BusyIndicatorSize.Small
+                    running: thumbDownloader.status !== NextcloudImageDownloader.Downloading
+                }
             }
 
             NextcloudImageDownloader {
@@ -95,11 +100,6 @@ Page {
                 userId: model.userId
                 albumId: model.albumId
                 photoId: model.photoId
-            }
-            BusyIndicator {
-                anchors.centerIn: fileItem
-                size: BusyIndicatorSize.Small
-                running: thumbDownloader.status !== NextcloudImageDownloader.Downloading
             }
         }
     }
