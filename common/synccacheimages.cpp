@@ -288,6 +288,7 @@ void ImageCacheThreadWorker::populatePhotoThumbnail(int idempToken, int accountI
     }
 
     QUrl previewUrl;
+    previewUrl.setScheme(QStringLiteral("https"));
     previewUrl.setPath(QStringLiteral("/index.php/core/preview")); // FIXME: root path may not be server/core but /server/somelocation/core!
     qDebug() << "Server Core path: and core:" << previewUrl.toString();
     QUrlQuery previewQuery;
