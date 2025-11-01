@@ -9,7 +9,6 @@
 
 #include "replyparser_p.h"
 #include "syncer_p.h"
-#include "logging.h"
 
 #include <QtCore/QUrl>
 #include <QtCore/QUrlQuery>
@@ -111,7 +110,6 @@ ReplyParser::GalleryMetadata ReplyParser::galleryMetadataFromResources(Syncer *i
 
             QUrl tnUrl(imageSyncer->serverUrl());
             tnUrl.setPath(imageSyncer->webDavPath().append(QStringLiteral("/core/preview")));
-            qCDebug(lcNextcloud) << "Server WebDAV path: and core:" << tnUrl.toString();
             QUrlQuery tnQuery;
             tnQuery.addQueryItem(QStringLiteral("fileId"), resource.fileId);
             tnQuery.addQueryItem(QStringLiteral("forceIcon"), QString::number(0));
@@ -119,7 +117,6 @@ ReplyParser::GalleryMetadata ReplyParser::galleryMetadataFromResources(Syncer *i
             tnQuery.addQueryItem(QStringLiteral("x"), QString::number(320));
             tnQuery.addQueryItem(QStringLiteral("y"), QString::number(320));
             tnUrl.setQuery(tnQuery);
-            qCDebug(lcNextcloud) << "Setting TN URL for" << resource.fileId << "in" << albumId << "to:" << tnUrl.toString();
 
             photo.thumbnailUrl = tnUrl;
 
