@@ -25,9 +25,12 @@ Page {
         imageCache: NextcloudImageCache
     }
 
-    SilicaListView {
+    SilicaGridView {
+        id: grid
         anchors.fill: parent
         model: photoModel
+        cellWidth: isLandscape ? parent.width/6 : parent.width/4
+        cellHeight: cellWidth
 
         header: PageHeader {
             title: {
@@ -41,11 +44,51 @@ Page {
             }
         }
 
-        delegate: BackgroundItem {
+        delegate: GridItem {
             id: photoDelegate
 
-            width: parent.width
-            height: fileItem.height
+            width: grid.cellWidth
+            height: grid.cellHeight
+
+            Image {
+                id: image
+
+                anchors.centerIn: parent
+                width: parent.width
+                height: parent.height
+
+                sourceSize.width: width
+                sourceSize.height: width
+
+                fillMode: thumbDownloader.status === NextcloudImageDownloader.Ready
+                    ? Image.preserveAspectCrop
+                    : Image.Pad
+                clip: thumbDownloader.status === NextcloudImageDownloader.Ready
+                source: thumbDownloader.status === NextcloudImageDownloader.Ready
+                        ? thumbDownloader.imagePath
+                        : Theme.iconForMimeType(model.fileType)
+                         + ( thumbDownloader.status === NextcloudImageDownloader.Error ? "?" + Theme.errorColor : "")
+                opacity: thumbDownloader.status === NextcloudImageDownloader.Ready
+                         ? 1 : Theme.opacityLow
+                Behavior on opacity { FadeAnimator {} }
+            }
+
+            BusyIndicator {
+                running: visible && (thumbDownloader.status === NextcloudImageDownloader.Downloading)
+                anchors.centerIn: parent
+            }
+
+            Label {
+                anchors.centerIn: parent
+                width: parent.width - Theme.paddingLarge
+                visible: thumbDownloader.status === NextcloudImageDownloader.Error
+                wrapMode: Text.WordWrap
+                horizontalAlignment: Text.AlignHCenter
+                color: Theme.secondaryColor
+                //: Error label for Nextcloud photos
+                //% "Loading failed"
+                text: qsTrId("jolla_gallery_nextcloud-la-loading-failed")
+            }
 
             onClicked: {
                 var props = {
@@ -53,34 +96,6 @@ Page {
                     "currentIndex": model.index
                 }
                 pageStack.push(Qt.resolvedUrl("NextcloudFullscreenPhotoPage.qml"), props)
-            }
-
-            FileItem {
-                id: fileItem
-
-                fileName: model.fileName
-                mimeType: model.fileType
-                size: model.fileSize
-                isDir: false
-                created: model.createdTimestamp
-                modified: model.modifiedTimestamp
-
-                icon {
-                    source: thumbDownloader.status === NextcloudImageDownloader.Ready
-                            ? thumbDownloader.imagePath
-                            : Theme.iconForMimeType(model.fileType)
-                    width: thumbDownloader.status === NextcloudImageDownloader.Ready
-                           ? Theme.itemSizeMedium
-                           : undefined
-                    height: icon.width
-                    sourceSize.width: icon.width
-                    sourceSize.height: icon.width
-                    clip: thumbDownloader.status === NextcloudImageDownloader.Ready
-                    fillMode: Image.PreserveAspectCrop
-                    highlighted: thumbDownloader.status !== NextcloudImageDownloader.Ready && photoDelegate.highlighted
-                    opacity: thumbDownloader.status === NextcloudImageDownloader.Ready && photoDelegate.highlighted
-                             ? Theme.opacityHigh : 1
-                }
             }
 
             NextcloudImageDownloader {
