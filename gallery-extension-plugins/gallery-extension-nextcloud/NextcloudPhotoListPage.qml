@@ -25,12 +25,11 @@ Page {
         imageCache: NextcloudImageCache
     }
 
-    SilicaGridView {
+    ImageGridView {
         id: grid
+
         anchors.fill: parent
         model: photoModel
-        cellWidth: isLandscape ? parent.width/6 : parent.width/4
-        cellHeight: cellWidth
 
         header: PageHeader {
             title: {
