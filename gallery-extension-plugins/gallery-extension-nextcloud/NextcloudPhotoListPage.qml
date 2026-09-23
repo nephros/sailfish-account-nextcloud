@@ -60,7 +60,7 @@ Page {
                 sourceSize.height: width
 
                 fillMode: thumbDownloader.status === NextcloudImageDownloader.Ready
-                    ? Image.preserveAspectCrop
+                    ? Image.PreserveAspectCrop
                     : Image.Pad
                 clip: thumbDownloader.status === NextcloudImageDownloader.Ready
                 source: thumbDownloader.status === NextcloudImageDownloader.Ready
