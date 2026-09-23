@@ -15,7 +15,7 @@ BackgroundItem {
     property alias accountId: imageDownloader.accountId
     property alias userId: imageDownloader.userId
     property alias albumId: imageDownloader.albumId
-    property string albumName
+    property alias albumName: dirItem.title
     property string albumThumbnailPath
     property int photoCount
     property bool usePlaceholderColor
@@ -26,9 +26,6 @@ BackgroundItem {
     NextcloudDirectoryItem {
         id: dirItem
 
-        title: root.albumName.indexOf("/") != -1
-            ? root.albumName.split("/").join("/\n")
-            : root.albumName
         titleLabel.color: root.usePlaceholderColor
                           ? (highlighted ? Theme.secondaryHighlightColor : Theme.secondaryColor)
                           : (highlighted ? Theme.highlightColor : Theme.primaryColor)
