@@ -51,8 +51,6 @@ Page {
             height: grid.cellHeight
 
             Image {
-                id: image
-
                 anchors.centerIn: parent
                 width: parent.width
                 height: parent.height
