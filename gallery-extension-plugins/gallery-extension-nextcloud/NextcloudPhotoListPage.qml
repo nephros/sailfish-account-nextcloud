@@ -31,6 +31,8 @@ Page {
         anchors.fill: parent
         model: photoModel
 
+        dateProperty: "createdTimestamp"
+
         header: PageHeader {
             title: {
                 if (albumName.length > 0) {
