@@ -52,6 +52,8 @@ Page {
             height: grid.cellHeight
 
             Image {
+                id: thumbnail
+
                 anchors.centerIn: parent
                 width: parent.width
                 height: parent.height
@@ -59,34 +61,54 @@ Page {
                 sourceSize.width: width
                 sourceSize.height: width
 
-                fillMode: thumbDownloader.status === NextcloudImageDownloader.Ready
-                    ? Image.PreserveAspectCrop
-                    : Image.Pad
-                clip: thumbDownloader.status === NextcloudImageDownloader.Ready
-                source: thumbDownloader.status === NextcloudImageDownloader.Ready
-                        ? thumbDownloader.imagePath
-                        : Theme.iconForMimeType(model.fileType)
-                         + ( thumbDownloader.status === NextcloudImageDownloader.Error ? "?" + Theme.errorColor : "")
-                opacity: thumbDownloader.status === NextcloudImageDownloader.Ready
-                         ? 1 : Theme.opacityLow
+                fillMode: Image.PreserveAspectCrop
+                clip: true
+                source: Theme.iconForMimeType(model.fileType)
+                opacity: Theme.opacityFaint
                 Behavior on opacity { FadeAnimator {} }
-            }
 
-            BusyIndicator {
-                running: visible && (thumbDownloader.status === NextcloudImageDownloader.Downloading)
-                anchors.centerIn: parent
-            }
+                states: [
+                    State {
+                        name: "loadOk"
+                        when: thumbDownloader.status === NextcloudImageDownloader.Ready
+                        PropertyChanges {
+                            target: thumbnail
+                            cache: false
+                            source: thumbDownloader.imagePath
+                            opacity: 1.0
+                        }
+                    },
+                    State {
+                        name: "loadError"
+                        when: thumbDownloader.status === NextcloudImageDownloader.Error
+                        PropertyChanges {
+                            target: errorLabel
+                            visible: true
+                        }
+                        PropertyChanges {
+                            target: thumbnail
+                            fillMode: Image.Pad
+                            clip: false
+                            cache: true
+                            source: "" //Theme.iconForMimeType(model.fileType) + "?" + Theme.errorColor
+                            opacity: 1.0
+                        }
+                    }
+                ]
+                Label {
+                    id: errorLabel
 
-            Label {
-                anchors.centerIn: parent
-                width: parent.width - Theme.paddingLarge
-                visible: thumbDownloader.status === NextcloudImageDownloader.Error
-                wrapMode: Text.WordWrap
-                horizontalAlignment: Text.AlignHCenter
-                color: Theme.secondaryColor
-                //: Error label for Nextcloud photos
-                //% "Loading failed"
-                text: qsTrId("jolla_gallery_nextcloud-la-loading-failed")
+                    visible: false
+                    //: Thumbnail Image loading failed
+                    //% "Oops, can't display the thumbnail!"
+                    text: qsTrId("jolla-gallery-ambience-la-image-thumbnail-loading-failed")
+                    anchors.centerIn: parent
+                    width: parent.width - 2 * Theme.paddingMedium
+                    wrapMode: Text.Wrap
+                    horizontalAlignment: Text.AlignHCenter
+                    color: Theme.secondaryColor
+                    font.pixelSize: Theme.fontSizeSmall
+                }
             }
 
             onClicked: {
@@ -95,6 +117,7 @@ Page {
                     "currentIndex": model.index
                 }
                 pageStack.push(Qt.resolvedUrl("NextcloudFullscreenPhotoPage.qml"), props)
+                state = "loadOk"
             }
 
             NextcloudImageDownloader {
