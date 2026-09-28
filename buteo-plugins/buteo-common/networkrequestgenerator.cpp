@@ -136,6 +136,43 @@ QNetworkReply *NetworkRequestGenerator::capabilities(const QByteArray &acceptCon
     return sendRequest(request, "GET");
 }
 
+QNetworkReply *NetworkRequestGenerator::runWebCron()
+{
+    QNetworkRequest request = networkRequest("/cron.php");
+    request.setRawHeader("Accept",  NetworkRequestGenerator::JsonContentType);
+    return sendRequest(request, "GET");
+}
+
+QNetworkReply *NetworkRequestGenerator::checkRemoteWipe(const QByteArray& deviceToken)
+{
+    if (Q_UNLIKELY(deviceToken.isEmpty())) {
+        qWarning() << "deviceToken empty, aborting";
+        return nullptr;
+    }
+
+    const QByteArray requestData = "token=" + deviceToken;
+    QNetworkRequest request = networkRequest("/index.php/core/check",
+                    NetworkRequestGenerator::JsonContentType,
+                    requestData);
+    request.setRawHeader("Accept", NetworkRequestGenerator::JsonContentType);
+    return sendRequest(request, "POST");
+}
+
+QNetworkReply *NetworkRequestGenerator::finishRemoteWipe(const QByteArray& deviceToken)
+{
+    if (Q_UNLIKELY(deviceToken.isEmpty())) {
+        qWarning() << "deviceToken empty, aborting";
+        return nullptr;
+    }
+
+    const QByteArray requestData = "token=" + deviceToken;
+    QNetworkRequest request = networkRequest("/index.php/core/wipe/success",
+                    NetworkRequestGenerator::JsonContentType,
+                    requestData);
+    request.setRawHeader("Accept", NetworkRequestGenerator::JsonContentType);
+    return sendRequest(request, "POST");
+}
+
 QNetworkReply *NetworkRequestGenerator::notificationList(const QByteArray &acceptContentType)
 {
     QNetworkRequest request = networkRequest("/ocs/v2.php/apps/notifications/api/v2/notifications");

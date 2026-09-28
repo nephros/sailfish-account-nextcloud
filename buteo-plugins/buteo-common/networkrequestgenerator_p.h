@@ -24,6 +24,10 @@ public:
 
     QNetworkReply *userInfo(const QByteArray &acceptContentType);
     QNetworkReply *capabilities(const QByteArray &acceptContentType);
+    QNetworkReply *runWebCron();
+
+    QNetworkReply *checkRemoteWipe(const QByteArray& deviceToken);
+    QNetworkReply *finishRemoteWipe(const QByteArray& deviceToken);
 
     QNetworkReply *notificationList(const QByteArray &acceptContentType);
     QNetworkReply *deleteNotification(const QString &notificationId);
