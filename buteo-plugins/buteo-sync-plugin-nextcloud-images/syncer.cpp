@@ -145,6 +145,18 @@ void Syncer::handleUserInfoReply()
     currentUser.accountId = m_accountId;
     currentUser.userId = user.userId;
     currentUser.displayName = user.displayName;
+
+    /* BEG: get the user avatar */
+    /* As the user may have changed it, we set Url always, and set Path to empty */
+    QUrl thumb = m_requestGenerator->userAvatarUrl(user.userId).url(QUrl::NormalizePathSegments | QUrl::RemoveUserInfo);
+    if (!thumb.isEmpty() && thumb != currentUser.thumbnailUrl) {
+        currentUser.thumbnailUrl = thumb;
+        currentUser.thumbnailPath = QString(); // FIXME: delete old file?
+    }
+    if (currentUser.thumbnailUrl.isValid())
+        qCWarning(lcNextcloud) << "Got an invalid user thumbnail URL for account:" << m_accountId;
+    /* END: get the user avatar */
+
     db.storeUser(currentUser, &error);
     if (error.errorCode != SyncCache::DatabaseError::NoError) {
         qCWarning(lcNextcloud) << "Failed to store user:" << currentUser.userId

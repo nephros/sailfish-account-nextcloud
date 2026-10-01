@@ -221,3 +221,14 @@ QNetworkReply *NetworkRequestGenerator::download(const QString &remoteFilePath)
     request.setRawHeader("Depth", "1");
     return sendRequest(request, "GET");
 }
+
+QUrl NetworkRequestGenerator::userAvatarUrl(const QString& userId, int size) const
+{
+    QUrl baseUrl(m_serverUrl);
+    QString path = baseUrl.path();
+    path.append("/index.php/avatar/" + userId + "/" + QString::number(size));
+    baseUrl.setPath(path);
+    if (!baseUrl.isValid())
+        return QUrl();
+    return baseUrl;
+}

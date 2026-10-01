@@ -14,6 +14,10 @@
 #include <QNetworkAccessManager>
 #include <QUrlQuery>
 
+#ifndef NEXTCLOUD_AVATAR_SIZE
+#define NEXTCLOUD_AVATAR_SIZE 512
+#endif
+
 class NetworkRequestGenerator
 {
 public:
@@ -38,6 +42,8 @@ public:
 
     static const QByteArray XmlContentType;
     static const QByteArray JsonContentType;
+
+    QUrl userAvatarUrl(const QString& userId, int size = NEXTCLOUD_AVATAR_SIZE) const;
 
 private:
     QNetworkRequest networkRequest(const QString &path,
