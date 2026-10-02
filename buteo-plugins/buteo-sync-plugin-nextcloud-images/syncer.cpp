@@ -243,6 +243,7 @@ void Syncer::handleUserInfoReply()
     if (!thumb.isEmpty() && !thumb.matches(currentUser.thumbnailUrl, QUrl::None)) {
         currentUser.thumbnailUrl = thumb;
         currentUser.thumbnailPath = QString(); // FIXME: delete old file?
+        currentUser.thumbnailFileName = QString();
         /* download: */
         QNetworkReply *reply = m_requestGenerator->download(currentUser.thumbnailUrl.path());
         if (reply) {
