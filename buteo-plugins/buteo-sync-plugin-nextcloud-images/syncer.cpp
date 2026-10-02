@@ -140,7 +140,7 @@ void Syncer::handleUserAvatarReply()
     const QMimeType mime_jpg = mdb.mimeTypeForName(QStringLiteral("image/jpeg"));
 
     const QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
-    if (!mime_png.inherits(contentType) || !mime_jpg.inherits(contentType)) {
+    if (!mime_png.inherits(contentType) && !mime_jpg.inherits(contentType)) {
         qCWarning(lcNextcloud) << "Received unsupported User avatar image type" << contentType << "for account:" << m_accountId;
         return;
     }
