@@ -140,13 +140,25 @@ void Syncer::handleUserAvatarReply()
         return;
     }
 
-    const QByteArray imgData = reply->readAll();
-    if (imgData.isEmpty()) {
-        finishWithError("No data found in server response");
+    // write reply data to file:
+    QFile thumbFile(QStringLiteral("%1/system/privileged/Images/nextcloud/account-%2/useravatar.%3")
+                .arg(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
+                .arg(m_accountId)
+                .arg(contentType.split("/").last().toLower()));
+    qCInfo(lcNextcloud) << "Writing thumbnail to file:" << thumbFile.fileName() << thumbFile.error();
+    if(!thumbFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        qCWarning(lcNextcloud) << "Failed to open thumbnail file for writing:" << thumbFile.fileName() << thumbFile.error();
         return;
     }
+    if(thumbFile.write(reply->readAll()) == -1) {
+        qCWarning(lcNextcloud) << "Failed to write thumbnail to file:" << thumbFile.fileName() << thumbFile.error();
+        return;
+    }
+    thumbFile.close();
+    qCInfo(lcNextcloud) << "Wrote thumbnail to file:" << thumbFile.fileName() << thumbFile.error();
 
-    // Store the image
+
+    // Store the image path in the database
     SyncCache::ImageDatabase db;
     SyncCache::DatabaseError error;
     db.openDatabase(
@@ -165,23 +177,6 @@ void Syncer::handleUserAvatarReply()
                     << ":" << error.errorMessage;
         return;
     }
-
-    QFile thumbFile(QStringLiteral("%1/system/privileged/Images/nextcloud/account-%2/useravatar.%3")
-                .arg(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
-                .arg(m_accountId)
-                .arg(contentType.split("/").last().toLower()));
-    qCInfo(lcNextcloud) << "Writing thumbnail to file:" << thumbFile.fileName() << thumbFile.error();
-    if(!thumbFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        qCWarning(lcNextcloud) << "Failed to open thumbnail file:" << thumbFile.fileName() << thumbFile.error();
-        return;
-    }
-    if(thumbFile.write(imgData, imgData.size()) == -1) {
-        qCWarning(lcNextcloud) << "Failed to write thumbnail to file:" << thumbFile.fileName() << thumbFile.error();
-        return;
-    }
-    thumbFile.close();
-    qCInfo(lcNextcloud) << "Wrote thumbnail to file:" << thumbFile.fileName() << thumbFile.error();
-
     user.thumbnailPath = thumbFile.fileName();
     user.thumbnailFileName = thumbFile.fileName().split("/").last();
 
