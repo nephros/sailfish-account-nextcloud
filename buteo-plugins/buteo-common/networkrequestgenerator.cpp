@@ -222,13 +222,10 @@ QNetworkReply *NetworkRequestGenerator::download(const QString &remoteFilePath)
     return sendRequest(request, "GET");
 }
 
-QUrl NetworkRequestGenerator::userAvatarUrl(const QString& userId, int size) const
+QNetworkReply *NetworkRequestGenerator::downloadUserAvatar(const QString& userId)
 {
     QUrl baseUrl(m_serverUrl);
     QString path = baseUrl.path();
-    path.append("/index.php/avatar/" + userId + "/" + QString::number(size));
-    baseUrl.setPath(path);
-    if (!baseUrl.isValid())
-        return QUrl();
-    return baseUrl;
+    path.append("/index.php/avatar/" + userId + "/512"); // FIXME
+    return download(path);
 }

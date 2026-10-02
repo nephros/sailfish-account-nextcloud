@@ -238,26 +238,17 @@ void Syncer::handleUserInfoReply()
     currentUser.displayName = user.displayName;
 
     /* BEG: get the user avatar Url */
-    /* As the user may have changed it, we set Url always, and set Path to empty */
-    QUrl thumb = m_requestGenerator->userAvatarUrl(user.userId).url(QUrl::NormalizePathSegments | QUrl::RemoveUserInfo);
-    if (!thumb.isEmpty() && !thumb.matches(currentUser.thumbnailUrl, QUrl::None)) {
-        currentUser.thumbnailUrl = thumb;
-        currentUser.thumbnailPath = QString(); // FIXME: delete old file?
-        currentUser.thumbnailFileName = QString();
-        /* download: */
-        QNetworkReply *reply = m_requestGenerator->download(currentUser.thumbnailUrl.path());
-        if (reply) {
-            connect(reply, &QNetworkReply::finished,
-                this, &Syncer::handleUserAvatarReply);
-        } else {
-            qCWarning(lcNextcloud) << "Failed to start User thumbnail request";
-            // not enough to throw an error here methinks:
-            // finishWithError(QStringLiteral("Failed to start user info request"));
-        }
+    {
+    QNetworkReply *reply = m_requestGenerator->downloadUserAvatar(user.userId);
+    if (reply) {
+        connect(reply, &QNetworkReply::finished,
+            this, &Syncer::handleUserAvatarReply);
+    } else {
+        qCWarning(lcNextcloud) << "Failed to start User thumbnail request";
+        // not enough to throw an error here methinks:
+        // finishWithError(QStringLiteral("Failed to start user info request"));
     }
-    if (currentUser.thumbnailUrl.isEmpty())
-        qCWarning(lcNextcloud) << "Got an empty user thumbnail URL for account:"
-                << m_accountId << ":" << currentUser.thumbnailUrl;
+    }
     /* END: get the user avatar */
 
     db.storeUser(currentUser, &error);
