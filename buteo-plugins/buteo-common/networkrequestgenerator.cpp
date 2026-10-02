@@ -224,8 +224,7 @@ QNetworkReply *NetworkRequestGenerator::download(const QString &remoteFilePath)
 
 QNetworkReply *NetworkRequestGenerator::downloadUserAvatar(const QString& userId)
 {
-    QUrl baseUrl(m_serverUrl);
-    QString path = baseUrl.path();
-    path.append("/index.php/avatar/" + userId + "/512"); // FIXME
+    QString path = m_serverUrl.path();
+    path.append("/index.php/avatar/" + userId + "/512"); // FIXME, what's the correct size?
     return download(path);
 }
