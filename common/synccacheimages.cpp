@@ -226,7 +226,11 @@ void ImageCacheThreadWorker::populateUserThumbnail(int idempToken, int accountId
         return;
     }
 
+    // downloading for user thumbnails is done in Syncer::handleUserInfoReply,
+    // see buteo-sync-plugin-nextcloud-images/syncer.cpp
+
     // otherwise, download thumbnail
+    /*
     if (!m_downloader) {
         m_downloader = new ImageDownloader(this);
     }
@@ -259,6 +263,7 @@ void ImageCacheThreadWorker::populateUserThumbnail(int idempToken, int accountId
         }
         watcher->deleteLater();
     });
+    */
 }
 
 void ImageCacheThreadWorker::populateAlbumThumbnail(int idempToken, int accountId, const QString &userId,
