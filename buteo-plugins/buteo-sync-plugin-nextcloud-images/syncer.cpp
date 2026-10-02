@@ -17,6 +17,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QByteArray>
 #include <QtCore/QStandardPaths>
+#include <QMimeDatabase>
 
 // buteo
 #include <SyncProfile.h>
@@ -133,10 +134,19 @@ void Syncer::handleUserAvatarReply()
         qCWarning(lcNextcloud) << "Server didn't send X-NC-IsCustomAvatar header for account:" << m_accountId;
     }
     // TODO: use QNetworkRequest::ContentDispositionHeader to yield: Content-Disposition: inline; filename="avatar.512.png"
+
+    QMimeDatabase mdb;
+    const QMimeType mime_png = mdb.mimeTypeForName(QStringLiteral("image/png"));
+    const QMimeType mime_jpg = mdb.mimeTypeForName(QStringLiteral("image/jpeg"));
+
     const QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
-    if (!QString::compare("image/png", contentType, Qt::CaseInsensitive)
-          || !QString::compare("image/jpeg", contentType, Qt::CaseInsensitive)) {
+    if (!mime_png.inherits(contentType) || !mime_jpg.inherits(contentType)) {
         qCWarning(lcNextcloud) << "Received unsupported User avatar image type" << contentType << "for account:" << m_accountId;
+        return;
+    }
+    const QMimeType mime_content = mdb.mimeTypeForData(reply);
+    if(!mime_content.inherits(contentType)) {
+        qCWarning(lcNextcloud) << "Received data does not match type" << contentType << "for account:" << m_accountId;
         return;
     }
 
@@ -144,8 +154,8 @@ void Syncer::handleUserAvatarReply()
     QFile thumbFile(QStringLiteral("%1/system/privileged/Images/nextcloud/account-%2/useravatar.%3")
                 .arg(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
                 .arg(m_accountId)
-                .arg(contentType.split("/").last().toLower()));
-    qCInfo(lcNextcloud) << "Writing thumbnail to file:" << thumbFile.fileName() << thumbFile.error();
+                .arg(mime_content.preferredSuffix()));
+    qCDebug(lcNextcloud) << "Writing thumbnail to file:" << thumbFile.fileName();
     if(!thumbFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         qCWarning(lcNextcloud) << "Failed to open thumbnail file for writing:" << thumbFile.fileName() << thumbFile.error();
         return;
