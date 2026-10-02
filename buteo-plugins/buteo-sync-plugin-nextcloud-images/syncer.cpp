@@ -132,9 +132,10 @@ void Syncer::handleUserAvatarReply()
         }
         qCWarning(lcNextcloud) << "Server didn't send X-NC-IsCustomAvatar header for account:" << m_accountId;
     }
-    //QNetworkRequest::ContentDispositionHeader
-    QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
-    if (contentType != "image/png" && contentType != "image/jpeg") {
+    // TODO: use QNetworkRequest::ContentDispositionHeader to yield: Content-Disposition: inline; filename="avatar.512.png"
+    const QString contentType = reply->header(QNetworkRequest::ContentTypeHeader).toString();
+    if (!QString::compare("image/png", contentType, Qt::CaseInsensitive)
+          || !QString::compare("image/jpeg", contentType, Qt::CaseInsensitive)) {
         qCWarning(lcNextcloud) << "Received unsupported User avatar image type" << contentType << "for account:" << m_accountId;
         return;
     }
@@ -157,18 +158,18 @@ void Syncer::handleUserAvatarReply()
                     << ":" << error.errorMessage;
         return;
     }
-    SyncCache::User currentUser;
-    currentUser.accountId = m_accountId;
 
-    // TODO: not perfect, but we need the user Id, but do not get it from the response.
-    // luckily, we passed in the userId in the URL, so: .../index.php/avatar/userid
-    const QStringList p = reply->url().path().split("/");
-    const QString userId = p.at(p.indexOf("avatar")+1);
-    currentUser.userId = userId;
+    SyncCache::User user = db.user(m_accountId, &error);
+    if (error.errorCode != SyncCache::DatabaseError::NoError) {
+        qCWarning(lcNextcloud) << "Failed to retrieve user from database for account:" << m_accountId
+                    << ":" << error.errorMessage;
+        return;
+    }
 
-    QFile thumbFile(QStringLiteral("%1/system/privileged/Images/nextcloud/account-%2/useravatar.png")
+    QFile thumbFile(QStringLiteral("%1/system/privileged/Images/nextcloud/account-%2/useravatar.%3")
                 .arg(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
-                .arg(m_accountId));
+                .arg(m_accountId)
+                .arg(contentType.split("/").last().toLower()));
     qCInfo(lcNextcloud) << "Writing thumbnail to file:" << thumbFile.fileName() << thumbFile.error();
     if(!thumbFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
         qCWarning(lcNextcloud) << "Failed to open thumbnail file:" << thumbFile.fileName() << thumbFile.error();
@@ -181,11 +182,12 @@ void Syncer::handleUserAvatarReply()
     thumbFile.close();
     qCInfo(lcNextcloud) << "Wrote thumbnail to file:" << thumbFile.fileName() << thumbFile.error();
 
-    currentUser.thumbnailPath = thumbFile.fileName();
+    user.thumbnailPath = thumbFile.fileName();
+    user.thumbnailFileName = thumbFile.fileName().split("/").last();
 
-    db.storeUser(currentUser, &error);
+    db.storeUser(user, &error);
     if (error.errorCode != SyncCache::DatabaseError::NoError) {
-        qCWarning(lcNextcloud) << "Failed to store user:" << currentUser.userId
+        qCWarning(lcNextcloud) << "Failed to store user:" << user.userId
                     << error.errorCode << error.errorMessage;
     }
 }
