@@ -18,6 +18,7 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QStandardPaths>
 #include <QMimeDatabase>
+#include <QSaveFile>
 
 // buteo
 #include <SyncProfile.h>
@@ -124,7 +125,6 @@ void Syncer::handleUserAvatarReply()
         return;
     }
 
-    qCDebug(lcNextcloud) << "ReplyHeaders:" << reply->rawHeaderList().join("\n");
     // some sanity checks:
     if (reply->hasRawHeader("X-NC-IsCustomAvatar")) {
         if (reply->rawHeader("X-NC-IsCustomAvatar").toInt() != 1) {
@@ -151,12 +151,14 @@ void Syncer::handleUserAvatarReply()
     }
 
     // write reply data to file:
-    QFile thumbFile(QStringLiteral("%1/system/privileged/Images/nextcloud/account-%2/useravatar.%3")
+    QSaveFile thumbFile(QStringLiteral("%1/system/privileged/Images/nextcloud/account-%2/useravatar.%3")
                 .arg(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation))
                 .arg(m_accountId)
                 .arg(mime_content.preferredSuffix()));
+    thumbFile.setDirectWriteFallback(true);
     qCDebug(lcNextcloud) << "Writing thumbnail to file:" << thumbFile.fileName();
-    if(!thumbFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+
+    if(!thumbFile.open(QIODevice::WriteOnly)) {
         qCWarning(lcNextcloud) << "Failed to open thumbnail file for writing:" << thumbFile.fileName() << thumbFile.error();
         return;
     }
@@ -164,9 +166,6 @@ void Syncer::handleUserAvatarReply()
         qCWarning(lcNextcloud) << "Failed to write thumbnail to file:" << thumbFile.fileName() << thumbFile.error();
         return;
     }
-    thumbFile.close();
-    qCInfo(lcNextcloud) << "Wrote thumbnail to file:" << thumbFile.fileName() << thumbFile.error();
-
 
     // Store the image path in the database
     SyncCache::ImageDatabase db;
@@ -187,14 +186,21 @@ void Syncer::handleUserAvatarReply()
                     << ":" << error.errorMessage;
         return;
     }
-    user.thumbnailPath = thumbFile.fileName();
-    user.thumbnailFileName = thumbFile.fileName().split("/").last();
 
-    db.storeUser(user, &error);
-    if (error.errorCode != SyncCache::DatabaseError::NoError) {
-        qCWarning(lcNextcloud) << "Failed to store user:" << user.userId
-                    << error.errorCode << error.errorMessage;
-    }
+    // finally write the file
+    if(thumbFile.commit()) {
+        user.thumbnailPath = thumbFile.fileName();
+        user.thumbnailFileName = thumbFile.fileName().split("/").last();
+
+        db.storeUser(user, &error);
+        if (error.errorCode != SyncCache::DatabaseError::NoError) {
+            qCWarning(lcNextcloud) << "Failed to store user:" << user.userId
+                        << error.errorCode << error.errorMessage;
+        }
+    } else
+        qCWarning(lcNextcloud) << "Could not write thumbnail to file:"
+                               << thumbFile.fileName() << thumbFile.error()
+                               << "contents will be lost.";
 }
 
 void Syncer::handleUserInfoReply()
